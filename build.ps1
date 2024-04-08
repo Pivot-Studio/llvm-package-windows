@@ -1,4 +1,4 @@
-$llvm_version = "16.0.5"
+$llvm_version = "18.1.2"
 
 # Check if scoop is installed
 if (!(Get-Command "scoop" -errorAction SilentlyContinue)) {
@@ -47,25 +47,25 @@ function build-msvc {
         -DCMAKE_INSTALL_PREFIX="$install_dir" `
         -DLLVM_ENABLE_LIBXML2=OFF `
         -DLLVM_ENABLE_ZLIB=OFF `
-        -DLLVM_USE_CRT_RELEASE="$crt_release_capitalized"
+        -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
         #-DLLVM_ENABLE_ASSERTIONS=ON
 
     # Build the project
     New-Item -ItemType "directory" -Force -Path $install_dir
-    cmake --build $build_dir --target INSTALL --config Release
+    cmake --build $build_dir --parallel 16 --target INSTALL --config Release
 
     # Create an archive from the installation
     7z a -mx9 "llvm-$llvm_version-windows-x64-$msvc_version-$crt_release.7z" "$install_dir\*"
 
     # Clean up all the directories
-    Get-ChildItem -Path $install_dir -Force -Recurse | Remove-Item -force -recurse -Confirm:$false
-    Get-ChildItem -Path $source_dir -Force -Recurse | Remove-Item -force -recurse -Confirm:$false
-    Remove-Item $install_dir -Force -Recurse -Confirm:$false
-    Remove-Item $source_dir -Force -Recurse -Confirm:$false
+    # Get-ChildItem -Path $install_dir -Force -Recurse | Remove-Item -force -recurse -Confirm:$false
+    # Get-ChildItem -Path $source_dir -Force -Recurse | Remove-Item -force -recurse -Confirm:$false
+    # Remove-Item $install_dir -Force -Recurse -Confirm:$false
+    # Remove-Item $source_dir -Force -Recurse -Confirm:$false
 }
 
 build-msvc "msvc17" "Visual Studio 17 2022" "mt"
-build-msvc "msvc16" "Visual Studio 16 2019" "mt"
+# build-msvc "msvc16" "Visual Studio 16 2019" "mt"
 
-build-msvc "msvc17" "Visual Studio 17 2022" "md"
-build-msvc "msvc16" "Visual Studio 16 2019" "md"
+# build-msvc "msvc17" "Visual Studio 17 2022" "md"
+# build-msvc "msvc16" "Visual Studio 16 2019" "md"
